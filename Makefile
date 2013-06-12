@@ -14,7 +14,7 @@ LDFLAGS += $(foreach library,$(LIBS),-l$(library))
 FILELOG_MAX_LVL=logDEBUG2
 
 C_SRCS             := 
-CXX_SRCS           := main.cpp parser.cpp
+CXX_SRCS           := main.cpp parser.cpp tokenizer.cpp
 GENERATED_C_SRCS   := 
 GENERATED_CXX_SRCS := 
 
