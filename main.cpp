@@ -5,14 +5,9 @@
 
 #include "main.h"
 #include "parser.h"
-#include "tokenizer.h"
 
-bool white_space( int c ) {
-  switch( c ) {
-    case ' ':
-    case '\t':  return true;
-    default:    return false;
-  }
+std::ostream& print_position(parser const &p) {
+  return std::cout << p.get_line_num() << ':' << p.get_line_num();
 }
 
 //============ main ===================//
@@ -35,12 +30,47 @@ int main( int argc, char *argv[] ) {   //
     cerr << "Error: no input file given.\nTerminating..." << endl;
   }
 
-  string str;
-  tokenizer tk(infile);
-  while( tk.get_string(str) ) {
-    cout << "line " << tk.get_line_num();
-    cout << " char " << tk.get_char_offset();
-    cout << ": " << str << endl;
+
+
+  parser p(infile);
+
+  int defcount, usecount, codecount;
+
+  while( p >> defcount ) {
+
+    cout << "# def: " << defcount << endl;
+    for( int i = 0; i < defcount; ++i ) {
+      string symbol;  int relative;
+
+      p >> symbol;
+      cout << p.get_line_num() << ":" << p.get_char_offset();
+      cout << " def: " << symbol << endl;
+      p >> relative;
+      cout << p.get_line_num() << ":" << p.get_char_offset();
+      cout << " @ " << relative << endl;
+    }
+
+    p >> usecount;
+    cout << "# use: " << usecount << endl;
+    for( int i = 0; i < usecount; ++i ) {
+      string symbol;
+      p >> symbol;
+      cout << "use: " << symbol << endl;
+    }
+
+    p >> codecount;
+    cout << "# code: " << codecount << endl;
+    for( int i = 0; i < codecount; ++i ) {
+      char instr_type;
+      int instr;
+      p >> instr_type;
+      p >> instr;
+      cout << "code: " << instr_type << ' ' << instr << endl;
+    }
+  }
+
+  if( !p.eof() ) {
+    cout << "there's more" << endl;
   }
 
   cout << "complete..." << endl;
