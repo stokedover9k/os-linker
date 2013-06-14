@@ -1,13 +1,28 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
+#define MAX_SYM_LENGTH 32
+#define MAX_DEF_LIST_LENGTH 32
+#define MAX_USE_LIST_LENGTH 32
+
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cctype>
+#include <cstdlib>
+#include "parse-error.h"
 
 struct parser
 {
   parser( std::istream & infile );
+
+  parser& get_defcount(int& i);
+  parser& get_usecount(int& i);
+  parser& get_codecount(int& i);
+  parser& get_address(int& i);
+  parser& get_symbol(std::string& s);
+  parser& get_instruction_type(char& c);
+  parser& get_instruction(int& i);
 
   parser& operator>>( std::string &str );
   parser& operator>>( int &i );
@@ -16,8 +31,8 @@ struct parser
   explicit operator bool() const;
   bool eof() const;
 
-  size_t get_line_num() const;
-  size_t get_char_offset() const;
+  size_t linenum() const;
+  size_t lineoffset() const;
 
 private:
   std::istream &infile;
@@ -28,32 +43,9 @@ private:
   void load_word();
 
   parser& get_string(std::string &);
-
-  /*
-  parser( std::istream & _infile );
-
-  explicit operator bool() const;
-  bool eof() const;
-  size_t get_line_num() const;
-  size_t get_char_offset() const;
-
-  parser& get_string( std::string &str );
-  parser& operator>>( std::string &str );
-  parser& operator>>( int &i );
-  parser& operator>>( char &c );
-
-private:
-  void load_line();
-  void load_word();
-  std::string read_word();
-
-  size_t line_num, char_offset;
-  std::string line, word;
-  std::istream &infile;
-  std::istringstream linestream, wordstream;
-
-  bool line_good, word_good;
-  */
 };
+
+parse_error_code valid_sym( std::string const & sym );
+parse_error_code valid_instr_type( char );
 
 #endif //__PARSER_H__

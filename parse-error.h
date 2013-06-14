@@ -5,6 +5,7 @@
 #include <sstream>
 
 enum parse_error_code {
+  VALID,
   NUM_EXPECTED,
   SYM_EXPECTED,
   ADDR_EXPECTED,

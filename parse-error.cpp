@@ -8,6 +8,7 @@ std::string parse_error::parse_error_message(
   int _lineoffset)
 {
   static const char* errstr[] = {
+    "VALID",
     "NUM_EXPECTED",
     "SYM_EXPECTED",
     "ADDR_EXPECTED",
@@ -36,3 +37,5 @@ parse_error::parse_error(
   linenum(_linenum),
   lineoffset(_lineoffset)
 { }
+
+//------------------------------------------
