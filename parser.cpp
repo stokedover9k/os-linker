@@ -77,10 +77,14 @@ size_t parser::lineoffset() const { return char_offset; }
 
 parser& parser::get_defcount(int& i) {
   int defcount;
-  if( !(*this >> defcount) && !eof() )
-    throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
-  if( defcount < 0 || defcount > MAX_DEF_LIST_LENGTH )
-    throw parse_error(TO_MANY_DEF_IN_MODULE, linenum(), lineoffset());
+  if( !(*this >> defcount) ) {
+    if( !eof() )
+      throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
+  }
+  else {
+    if( defcount < 0 || defcount > MAX_DEF_LIST_LENGTH )
+      throw parse_error(TO_MANY_DEF_IN_MODULE, linenum(), lineoffset());
+  }
 
   i = defcount;
   return *this;
@@ -149,6 +153,15 @@ parser& parser::get_instruction(int &i) {
       throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
   i = atoi(instr.c_str());
   return *this;
+}
+
+void parser::reset() {
+  infile.clear();
+  infile.seekg(0, infile.beg);
+  linestream.clear();
+  wordstream.clear();
+  line_num = 0;
+  word_length = 0;
 }
 
 //---------------------------------------------------------

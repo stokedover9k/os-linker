@@ -2,10 +2,32 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <map>
 
 #include "main.h"
 #include "parser.h"
 #include "parse-error.h"
+
+std::map<int, std::string> addr_to_sym;
+std::unordered_map<std::string, int> sym_to_addr;
+std::unordered_map<std::string, int> sym_to_module;
+std::unordered_map<int, int> module_to_addr;
+
+void add_sym(std::string const & sym, int addr, int module_num) {
+  int start = module_to_addr[module_num];
+  std::pair<std::string, int> p(sym, module_num);
+
+  auto result = sym_to_module.insert(p);
+  if( !result.second ) {
+    throw std::runtime_error("symbol already defined");
+  }
+
+  std::pair<std::string, int> p2(sym, start + addr);
+  std::pair<int, std::string> p3(start + addr, sym);
+  sym_to_addr.insert(p2);
+  addr_to_sym.insert(p3);
+}
 
 struct pos_stamp {
   parser const & p;
@@ -27,12 +49,19 @@ void first_path( parser &Parser ) {   //
   int defcount, usecount, codecount;
   parse_error_code errorcode;
 
-  while( Parser.get_defcount(defcount) ) {
+  for(
+   int module_num = 1, module_addr = 0;
+   Parser.get_defcount(defcount);
+   ++module_num )
+  {
     for( int i = 0; i < defcount; ++i ) {
       string symbol;  int relative;
 
       Parser.get_symbol(symbol);
       Parser.get_address(relative);
+
+      module_to_addr[module_num] = module_addr;
+      add_sym(symbol, relative, module_num);
     }
 
     Parser.get_usecount( usecount );
@@ -45,16 +74,17 @@ void first_path( parser &Parser ) {   //
     for( int i = 0; i < codecount; ++i ) {
       char instr_type;
       int instr;
-      Parser >> instr_type;
+      Parser.get_instruction_type(instr_type);
       Parser.get_instruction(instr);
       cout << "code: " << instr_type << ' ' << instr << endl;
     }
+
+    module_addr += codecount;
   }
 
   if( !Parser.eof() ) {
     syntax_err(NUM_EXPECTED, Parser);
   }
-
 
 }
 
@@ -90,6 +120,10 @@ int main( int argc, char *argv[] ) {   //
     cout << pe.what() << endl;
     exit(1);
   }
+
+  //========== second pass =============//
+  cout << "---- second pass ------- " << endl;
+  p.reset();
   
   cout << "complete..." << endl;
   return 0;

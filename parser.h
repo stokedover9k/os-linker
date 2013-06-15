@@ -34,6 +34,8 @@ struct parser
   size_t linenum() const;
   size_t lineoffset() const;
 
+  void reset();
+
 private:
   std::istream &infile;
   std::stringstream linestream, wordstream;
