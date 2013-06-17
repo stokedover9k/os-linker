@@ -29,7 +29,7 @@ struct parser
   parser& operator>>( int &i );
   parser& operator>>( char &c );
 
-  explicit operator bool() const;
+  operator bool() const;
   bool eof() const;
 
   size_t linenum() const;

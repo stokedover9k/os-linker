@@ -32,6 +32,9 @@ ${EXECUTABLE}: ${OBJS}
 clean:
 	rm -fv ${OBJS} ${EXECUTABLE}
 
+zipdevel:
+	zip linker.devel.zip $(CXX_SRCS) main.h parser.h parse-error.h test.sh inout/* README.md lab1-linker.pdf
+
 define OBJECT_DEPENDS_ON_CORRESPONDING_HEADER
         $(1) : ${1:.o=.h}
 endef
