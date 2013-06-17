@@ -21,7 +21,7 @@ std::string parse_error::parse_error_message(
 
   std::stringstream ss(std::ios_base::out);
   ss << "Parse Error" 
-     << " line_" << _linenum
+     << " line " << _linenum
      << " offset " << _lineoffset
      << ": " << errstr[_errcode];
   return ss.str();

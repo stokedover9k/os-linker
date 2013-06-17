@@ -2,9 +2,9 @@
 #define __PARSER_H__
 
 #define MACHINE_SIZE (512)
-#define MAX_SYM_LENGTH (32)
-#define MAX_DEF_LIST_LENGTH (32)
-#define MAX_USE_LIST_LENGTH (32)
+#define MAX_SYM_LENGTH (16)
+#define MAX_DEF_LIST_LENGTH (16)
+#define MAX_USE_LIST_LENGTH (16)
 
 #include <iostream>
 #include <sstream>

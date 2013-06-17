@@ -113,7 +113,7 @@ parser& parser::get_codecount(int& i) {
 parser& parser::get_address(int& i) {
   int addr;
   if( !(*this >> addr) || addr < 0 )
-    throw parse_error(ADDR_EXPECTED, linenum(), lineoffset());
+    throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
 
   i = addr;
   return *this;
@@ -122,7 +122,7 @@ parser& parser::get_address(int& i) {
 parser& parser::get_symbol(std::string& str) {
   std::string sym;
   if( !(*this >> sym) )
-    throw parse_error( ADDR_EXPECTED, linenum(), lineoffset() );
+    throw parse_error( SYM_EXPECTED, linenum(), lineoffset() );
   else if( VALID != valid_sym(sym) )
     throw parse_error( valid_sym(sym), linenum(), lineoffset() );
 
@@ -134,24 +134,18 @@ parser& parser::get_instruction_type(char &c) {
   std::string instr;
   if( !(*this >> instr) || instr.length() != 1 )
     // for the lack of better error code...
-    throw parse_error(SYM_EXPECTED, linenum(), lineoffset());
+    throw parse_error(ADDR_EXPECTED, linenum(), lineoffset());
   if( VALID != valid_instr_type(instr[0]) )
-    throw parse_error(SYM_EXPECTED, linenum(), lineoffset());
+    throw parse_error(ADDR_EXPECTED, linenum(), lineoffset());
   c = instr[0];
   return *this;
 }
 
 parser& parser::get_instruction(int &i) {
-  std::string instr;
+  int instr;
   if( !(*this >> instr) )
     throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
-  if( instr.length() != 4 )
-    // for the lack of better error code...
-    throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
-  for( int i = 0; i < instr.length(); ++i )
-    if( !isdigit(instr[i]) )
-      throw parse_error(NUM_EXPECTED, linenum(), lineoffset());
-  i = atoi(instr.c_str());
+  i = instr;
   return *this;
 }
 

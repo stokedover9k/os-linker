@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
+#include <list>
 #include <unordered_set>
 
 #include "main.h"
@@ -14,6 +15,7 @@
 
 #define DEBUG false
 
+std::list<std::string> syms_in_order;
 std::map<int, std::string> addr_to_sym;
 std::unordered_map<std::string, int> sym_to_addr;
 std::unordered_map<std::string, int> sym_to_module;
@@ -34,6 +36,7 @@ void add_sym(std::string const & sym, int addr, int module_num) {
     return;
   }
 
+  syms_in_order.push_back(sym);
   std::pair<std::string, int> p2(sym, start + addr);
   std::pair<int, std::string> p3(start + addr, sym);
   sym_to_addr.insert(p2);
@@ -41,13 +44,36 @@ void add_sym(std::string const & sym, int addr, int module_num) {
   unused_symbols.insert(sym);
 }
 
+void check_address_bounds() {
+  for(
+    auto i = syms_in_order.begin();
+    i != syms_in_order.end();
+    i++ )
+  {
+    std::string const & sym( *i );
+    int module = sym_to_module[sym];
+    int m_size = module_sizes[module];
+    int m_start = module_to_addr[module];
+    int sym_addr = sym_to_addr[sym];
+    int sym_relative = sym_addr - m_start;
+
+    if( sym_relative >= m_size ) {
+      std::cout << "Warning: Module " << module << ": " 
+                << sym << " to big " << sym_relative
+                << " (max=" << (m_size-1)
+                << ") assume zero relative" << std::endl;
+      sym_to_addr[sym] = m_start;
+    }
+  }
+}
+
 void print_sym_table() {
   for(
-   auto i = addr_to_sym.begin();
-   i != addr_to_sym.end(); i++)
+   auto i = syms_in_order.begin();
+   i != syms_in_order.end(); i++)
   {
-    std::cout << i->second << '=' << i->first;
-    if( multiple_defines.count(i->second) > 0 )
+    std::cout << *i << '=' << sym_to_addr[*i];
+    if( multiple_defines.count(*i) > 0 )
       std::cout << " Error: This variable is multiple times defined; first value used";
     std::cout << '\n'; 
   }
@@ -97,7 +123,7 @@ void print_absolute_addr( char instr_type, int instr, int module_num ) {
     break;
   }
 
-  std::cout << (absolute + 1000 * opcode);
+  std::cout << std::setfill('0') << std::setw(4) << (absolute + 1000 * opcode);
   if( error.length() > 0 )
     std::cout << ' ' << error;
 }
@@ -149,6 +175,8 @@ void first_pass( parser &Parser ) {   //
 
     // pass 1: code
     Parser.get_codecount( codecount );
+    if( module_addr + codecount >= MACHINE_SIZE )
+      throw parse_error(TO_MANY_INSTR, Parser.linenum(), Parser.lineoffset());
     for( int i = 0; i < codecount; ++i ) {
       char instr_type;
       int instr;
@@ -262,6 +290,9 @@ int main( int argc, char *argv[] ) {   //
     exit(1);
   }
 
+  // Checks for relative addresses exceeding module size (rule 5)
+  check_address_bounds();
+
   cout << "Symbol Table\n";
   print_sym_table();
   cout << '\n';
@@ -272,7 +303,9 @@ int main( int argc, char *argv[] ) {   //
   second_pass(p);
 
   cout << '\n';
-  for( auto i = unused_symbols.begin(); i != unused_symbols.end(); i++ )
+
+  for( auto i = syms_in_order.begin(); i != syms_in_order.end(); i++ )
+    if( unused_symbols.count(*i) > 0 )
       cout << "Warning: "
            << *i << " was defined in module "
            << sym_to_module[*i] << " but never used" << endl;
